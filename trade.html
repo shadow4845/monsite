@@ -87,7 +87,7 @@ if (noVal) $("info").textContent = "⚠️ Aucune valeur saisie pour l'instant :
 
 const side = { A:[null,null,null,null], B:[null,null,null,null] };
 let target = null, tab = "Tous";
-const icon = f => `<div class="ic r-${f.rarity}">${esc(f.name.slice(0,2))}</div>`;
+const icon = f => f.image ? `<img class="ic r-${f.rarity}" src="${esc(f.image)}" alt="" style="object-fit:contain;padding:3px">` : `<div class="ic r-${f.rarity}">${esc(f.name.slice(0,2))}</div>`;
 
 function renderSide(k){
   $(k).innerHTML = side[k].map((s,i)=> s ? `<div class="slot full" data-k="${k}" data-i="${i}">

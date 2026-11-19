@@ -57,16 +57,17 @@
 
   <div class="card">
     <h2 style="margin-bottom:16px">🍎 Fruits Blox Fruits (valeur et demande)</h2>
-    <form id="fruitForm" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+    <form id="fruitForm" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr auto;gap:10px;align-items:end">
       <div><label>Nom</label><input id="fName" required></div>
       <div><label>Valeur</label><input id="fVal" type="number" min="0" required></div>
       <div><label>Valeur perm</label><input id="fPerm" type="number" min="0"></div>
       <div><label>Demande /10</label><input id="fDem" type="number" min="0" max="10" required></div>
+      <div><label>Image (lien)</label><input id="fImg" placeholder="https://..."></div>
       <div><button type="submit" style="margin-bottom:16px">Enregistrer</button></div>
     </form>
     <button class="grey small" id="seedFruits">Importer la liste des fruits (valeurs à 0)</button>
     <details style="margin:12px 0"><summary style="cursor:pointer">⚡ Saisie rapide (plusieurs fruits d'un coup)</summary>
-      <p style="color:#aaa;font-size:13px;margin:8px 0">Une ligne par fruit : <code>Nom;Valeur;ValeurPerm;Demande</code> — ex. <code>Dragon;3500000;5000000;10</code></p>
+      <p style="color:#aaa;font-size:13px;margin:8px 0">Une ligne par fruit : <code>Nom;Valeur;ValeurPerm;Demande;LienImage</code> (l'image est facultative) — ex. <code>Dragon;3500000;5000000;10</code></p>
       <textarea id="bulkFruits" rows="8" placeholder="Dragon;3500000;5000000;10&#10;Kitsune;2500000;4000000;9"></textarea>
       <button class="small" id="bulkSave">Enregistrer tout</button>
     </details>
@@ -155,15 +156,15 @@ const fid = n => n.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-");
 async function loadFruits(){
   const snap = await getDocs(collection(db,"fruits"));
   const list = snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.value||0)-(x.value||0));
-  $("fruitList").innerHTML = list.map(f=>`<tr><td>${esc(f.name)}</td><td>${(f.value||0).toLocaleString("fr-FR")}</td><td>${f.permValue?f.permValue.toLocaleString("fr-FR"):"-"}</td><td>${f.demand||0}/10</td>
+  $("fruitList").innerHTML = list.map(f=>`<tr><td>${f.image?`<img src="${esc(f.image)}" style="width:26px;height:26px;vertical-align:middle;margin-right:6px">`:""}${esc(f.name)}</td><td>${(f.value||0).toLocaleString("fr-FR")}</td><td>${f.permValue?f.permValue.toLocaleString("fr-FR"):"-"}</td><td>${f.demand||0}/10</td>
     <td><button class="small" data-edit="${f.id}">Modifier</button> <button class="red small" data-fdel="${f.id}">✕</button></td></tr>`).join("") || '<tr><td colspan="5" style="color:#777">Aucun fruit</td></tr>';
   $("fruitList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const f=list.find(x=>x.id===b.dataset.edit);
-    $("fName").value=f.name;$("fVal").value=f.value||0;$("fPerm").value=f.permValue||"";$("fDem").value=f.demand||0;$("fName").focus();});
+    $("fName").value=f.name;$("fVal").value=f.value||0;$("fPerm").value=f.permValue||"";$("fDem").value=f.demand||0;$("fImg").value=f.image||"";$("fName").focus();});
   $("fruitList").querySelectorAll("[data-fdel]").forEach(b=>b.onclick=async()=>{if(confirm("Supprimer ce fruit ?")){await deleteDoc(doc(db,"fruits",b.dataset.fdel));loadFruits();}});
 }
 $("fruitForm").onsubmit = async e => { e.preventDefault();
   const name=$("fName").value.trim();
-  await setDoc(doc(db,"fruits",fid(name)),{name,value:+$("fVal").value,permValue:+$("fPerm").value||0,demand:Math.min(10,+$("fDem").value)});
+  await setDoc(doc(db,"fruits",fid(name)),{name,value:+$("fVal").value,permValue:+$("fPerm").value||0,demand:Math.min(10,+$("fDem").value),image:$("fImg").value.trim()});
   e.target.reset(); $("fruitMsg").textContent="Fruit enregistré ✔"; $("fruitMsg").className="msg ok"; loadFruits(); };
 $("seedFruits").onclick = async () => {
   for (const n of NAMES) { const r=doc(db,"fruits",fid(n)); const s=await getDoc(r); if(!s.exists()) await setDoc(r,{name:n,value:0,permValue:0,demand:0}); }
@@ -171,8 +172,8 @@ $("seedFruits").onclick = async () => {
 loadFruits();
 $("bulkSave").onclick = async () => {
   const lines = $("bulkFruits").value.split("\n").map(l=>l.trim()).filter(Boolean); let n=0;
-  for (const l of lines) { const [name,v,p,d] = l.split(/[;,\t]/).map(x=>x.trim()); if(!name) continue;
-    await setDoc(doc(db,"fruits",fid(name)),{name,value:+v||0,permValue:+p||0,demand:Math.min(10,+d||0)}); n++; }
+  for (const l of lines) { const [name,v,p,d,img] = l.split(/[;\t]/).map(x=>x.trim()); if(!name) continue;
+    await setDoc(doc(db,"fruits",fid(name)),{name,value:+v||0,permValue:+p||0,demand:Math.min(10,+d||0),image:img||""}); n++; }
   $("fruitMsg").textContent = n+" fruits enregistrés ✔"; $("fruitMsg").className="msg ok"; loadFruits(); };
 
 </script>
