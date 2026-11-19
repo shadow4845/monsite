@@ -17,6 +17,22 @@
 
 <main style="display:flex;flex-direction:column;gap:24px">
   <div class="card">
+    <h2 style="margin-bottom:16px">📺 Streameurs</h2>
+    <form id="streamForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
+      <div><label>Pseudo *</label><input id="sName" required maxlength="40"></div>
+      <div><label>Rôle</label><input id="sRole" maxlength="40" placeholder="Streameur, Modo…"></div>
+      <div><label>Twitch (pseudo ou lien)</label><input id="sTwitch" maxlength="120"></div>
+      <div><label>YouTube (lien)</label><input id="sYt" maxlength="200"></div>
+      <div><label>TikTok (lien)</label><input id="sTk" maxlength="200"></div>
+      <div><label>Photo (lien image)</label><input id="sAv" maxlength="300"></div>
+      <div><label>Ordre</label><input id="sOrd" type="number" value="0"></div>
+      <div><button type="submit" style="margin-bottom:16px">Enregistrer</button></div>
+    </form>
+    <div class="msg" id="streamMsg"></div>
+    <table><thead><tr><th>Pseudo</th><th>Rôle</th><th>Twitch</th><th></th></tr></thead><tbody id="streamList"></tbody></table>
+  </div>
+
+  <div class="card">
     <h2 style="margin-bottom:16px">➕ Ajouter une actu</h2>
     <form id="postForm">
       <label>Titre</label><input id="pTitle" required maxlength="100">
@@ -67,7 +83,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const date = t => t ? t.toDate().toLocaleDateString("fr-FR") : "";
 
 const { user } = await requireAuth(true);
-$("logout").onclick = async () => { await signOut(auth); location.href = "login.html"; };
+if ($("logout")) $("logout").onclick = async () => { await signOut(auth); location.href = "login.html"; };
 
 // ---- Actus
 async function loadPosts() {
@@ -110,6 +126,23 @@ async function loadUsers() {
     if (confirm("Supprimer cet utilisateur du site ?")) { await deleteDoc(doc(db, "users", b.dataset.ban)); loadUsers(); }
   });
 }
+// ---- Streameurs
+const sid = n => n.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-");
+async function loadStreamers(){
+  const snap = await getDocs(collection(db,"streamers"));
+  const L = snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(x.order||0)-(y.order||0));
+  $("streamList").innerHTML = L.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.role)}</td><td>${esc(s.twitch)}</td>
+    <td style="white-space:nowrap"><button class="small" data-sedit="${s.id}">Modifier</button> <button class="red small" data-sdel="${s.id}">✕</button></td></tr>`).join("")
+    || '<tr><td colspan="4" style="color:#777">Aucun streameur (la page affiche NemesisShadow par défaut)</td></tr>';
+  $("streamList").querySelectorAll("[data-sedit]").forEach(b=>b.onclick=()=>{const s=L.find(x=>x.id===b.dataset.sedit);
+    $("sName").value=s.name||"";$("sRole").value=s.role||"";$("sTwitch").value=s.twitch||"";$("sYt").value=s.youtube||"";$("sTk").value=s.tiktok||"";$("sAv").value=s.avatar||"";$("sOrd").value=s.order||0;$("sName").focus();});
+  $("streamList").querySelectorAll("[data-sdel]").forEach(b=>b.onclick=async()=>{if(confirm("Retirer ce streameur ?")){await deleteDoc(doc(db,"streamers",b.dataset.sdel));loadStreamers();}});
+}
+$("streamForm").onsubmit = async e => { e.preventDefault();
+  const name=$("sName").value.trim();
+  await setDoc(doc(db,"streamers",sid(name)),{name,role:$("sRole").value.trim(),twitch:$("sTwitch").value.trim(),youtube:$("sYt").value.trim(),tiktok:$("sTk").value.trim(),avatar:$("sAv").value.trim(),order:+$("sOrd").value||0});
+  e.target.reset(); $("streamMsg").textContent="Streameur enregistré ✔"; $("streamMsg").className="msg ok"; loadStreamers(); };
+loadStreamers();
 loadPosts(); loadUsers();
 // ---- Fruits
 const NAMES=["Rocket","Spin","Blade","Spring","Bomb","Smoke","Spike","Flame","Ice","Sand","Dark","Eagle","Diamond","Light","Rubber","Ghost","Magma","Quake","Buddha","Love","Creation","Spider","Sound","Phoenix","Portal","Lightning","Pain","Blizzard","Gravity","Mammoth","T-Rex","Dough","Shadow","Venom","Control","Gas","Spirit","Leopard","Yeti","Kitsune","Dragon"];

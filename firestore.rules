@@ -26,6 +26,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    match /streamers/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /site/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
