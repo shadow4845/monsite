@@ -2,79 +2,136 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculateur de trades Blox Fruits</title>
+<title>Calculateur de trades – Shadow</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .sides { display:grid; grid-template-columns:1fr auto 1fr; gap:18px; align-items:start; }
-  @media(max-width:800px){ .sides{grid-template-columns:1fr} .vs{text-align:center} }
-  .vs { font-size:34px; font-weight:800; color:#a855f7; padding-top:120px; }
-  .slot { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; margin-bottom:8px;
-    border-radius:10px; background:#12121f; border:1px solid #2a2a40; }
-  .slot small { color:#999; }
-  .tot { margin-top:12px; padding-top:12px; border-top:1px solid #2a2a40; font-size:15px; line-height:1.7; }
-  .verdict { text-align:center; font-size:26px; font-weight:800; margin-top:24px; padding:18px; border-radius:14px; }
-  .win{background:rgba(34,197,94,.15);color:#4ade80} .lose{background:rgba(239,68,68,.15);color:#f87171} .fair{background:rgba(168,85,247,.15);color:#c084fc}
-  .dem { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; background:#374151; }
+  main{max-width:1150px}
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:800px){.board{grid-template-columns:1fr}}
+  .side h2{margin-bottom:12px}
+  .slots{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .slot{position:relative;height:130px;border-radius:14px;border:2px dashed #4b2d73;background:rgba(20,10,35,.75);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.15s;text-align:center;padding:8px}
+  .slot:hover{border-color:#a855f7;background:rgba(60,20,100,.5)}
+  .slot.full{border-style:solid;border-color:#7c3aed}
+  .slot .plus{font-size:34px;color:#7c3aed}
+  .slot .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:6px}
+  .slot b{font-size:14px}.slot small{color:#bbb;font-size:12px}
+  .slot .x{position:absolute;top:6px;right:8px;color:#f87171;font-weight:800}
+  .slot .perm{position:absolute;top:6px;left:8px;font-size:10px;background:#a855f7;padding:1px 6px;border-radius:99px}
+  .sum{margin-top:12px;padding:14px;border-radius:12px;background:rgba(20,10,35,.75);border:1px solid #2a2a40;line-height:1.8}
+  .sum b{color:#fff}
+  .bar{height:14px;border-radius:99px;background:#1f1630;overflow:hidden;margin-top:22px;display:flex}
+  .bar div{height:100%}
+  .verdict{text-align:center;font-size:28px;font-weight:800;margin-top:14px;padding:16px;border-radius:14px}
+  .win{background:rgba(34,197,94,.15);color:#4ade80}.lose{background:rgba(239,68,68,.15);color:#f87171}.fair{background:rgba(168,85,247,.15);color:#c084fc}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}
+  .modal.show{display:flex}
+  .picker{width:min(900px,100%);max-height:85vh;overflow:auto;background:#120a1f;border:1px solid #6b4a9a;border-radius:18px;padding:20px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .tabs button{background:#2a1a40;padding:6px 12px;font-size:13px}.tabs button.on{background:linear-gradient(90deg,#7c3aed,#a855f7)}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  .fruit{padding:10px;border-radius:12px;background:#1d1230;border:1px solid #33224d;cursor:pointer;text-align:center}
+  .fruit:hover{border-color:#a855f7}
+  .fruit .ic{width:42px;height:42px;border-radius:10px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-weight:800}
+  .fruit small{display:block;color:#aaa;font-size:11px}
+  .r-Mythical{background:linear-gradient(135deg,#ef4444,#7c3aed)}.r-Legendary{background:linear-gradient(135deg,#a855f7,#ec4899)}
+  .r-Rare{background:linear-gradient(135deg,#3b82f6,#06b6d4)}.r-Uncommon{background:linear-gradient(135deg,#22c55e,#14b8a6)}.r-Common{background:#4b5563}
 </style>
 </head>
 <body class="banner">
-<nav>
-  <b class="grad" style="font-size:20px;display:flex;align-items:center;gap:10px"><img src="logo.png" alt="" style="width:38px;height:38px;border-radius:50%;box-shadow:0 0 12px #a855f7">Trades Blox Fruits</b>
-  <div class="links"><a href="user.html" class="btn" style="padding:8px 14px">Accueil</a></div>
-</nav>
 <main>
-  <p style="color:#bbb;margin-bottom:20px">Ajoute les fruits de chaque côté. Le calcul utilise la valeur et la demande gérées par l'admin. Valeurs du marché à jour : <a href="https://bloxfruitsvalues.com/" target="_blank" rel="noopener">bloxfruitsvalues.com</a></p>
-  <div class="sides">
-    <div class="card" id="A"></div>
-    <div class="vs">VS</div>
-    <div class="card" id="B"></div>
+  <h1 class="grad" style="font-size:38px;margin:18px 0 4px">🍎 Calculateur de trades</h1>
+  <p style="color:#bbb;margin-bottom:20px">Clique sur une case pour ajouter un fruit (4 max par côté). Valeurs gérées par le staff · référence marché : <a href="https://bloxfruitsvalues.com/" target="_blank" rel="noopener">bloxfruitsvalues.com</a></p>
+  <div class="board">
+    <div class="side"><h2>🟣 Toi (tu donnes)</h2><div class="slots" id="A"></div><div class="sum" id="sumA"></div></div>
+    <div class="side"><h2>⚫ Lui (tu reçois)</h2><div class="slots" id="B"></div><div class="sum" id="sumB"></div></div>
   </div>
+  <div class="bar"><div id="barA" style="background:#a855f7;width:50%"></div><div id="barB" style="background:#3b82f6;width:50%"></div></div>
   <div class="verdict fair" id="verdict">Ajoute des fruits pour comparer</div>
+  <div style="text-align:center;margin-top:12px"><button class="grey" id="reset">↺ Réinitialiser</button></div>
   <p id="info" style="color:#777;font-size:13px;margin-top:14px;text-align:center"></p>
 </main>
+
+<div class="modal" id="modal"><div class="picker">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+    <input id="search" placeholder="🔎 Rechercher un fruit…" style="margin:0;flex:1">
+    <label style="display:flex;gap:6px;align-items:center;margin:0;white-space:nowrap"><input type="checkbox" id="permChk" style="width:auto;margin:0"> Permanent</label>
+    <button class="red small" id="close">✕</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="fgrid" id="fgrid"></div>
+</div></div>
+
 <script type="module">
 import { db, collection, getDocs } from "./app.js";
-const fmt = n => Math.round(n).toLocaleString("fr-FR");
+const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const snap = await getDocs(collection(db, "fruits"));
-const fruits = snap.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=>(b.value||0)-(a.value||0));
-document.getElementById("info").textContent = fruits.length ? `${fruits.length} fruits dans la liste.` : "Aucun fruit pour l'instant : l'admin doit remplir la liste.";
-const side = { A: [], B: [] };
-const demandLabel = d => d>=8?"Très demandé":d>=6?"Demandé":d>=4?"Moyen":"Peu demandé";
+const fmt = n => n>=1e9?(n/1e9).toFixed(2).replace(/\.?0+$/,"")+"B":n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?(n/1e3).toFixed(0)+"K":String(Math.round(n));
+// Liste de base des fruits (rareté du jeu). Valeurs = celles saisies dans l'admin.
+const BASE = {Common:["Rocket","Spin","Blade","Spring","Bomb","Smoke","Spike"],Uncommon:["Flame","Ice","Sand","Dark","Eagle","Diamond"],
+  Rare:["Light","Rubber","Ghost","Magma"],Legendary:["Quake","Buddha","Love","Creation","Spider","Sound","Phoenix","Portal","Lightning","Pain","Blizzard"],
+  Mythical:["Gravity","Mammoth","T-Rex","Dough","Shadow","Venom","Control","Gas","Spirit","Leopard","Yeti","Kitsune","Dragon"]};
+const rarityOf = {}; for (const [r,l] of Object.entries(BASE)) l.forEach(n => rarityOf[n.toLowerCase()] = r);
+const fid = n => n.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-");
+let fruits = {};
+for (const [r,l] of Object.entries(BASE)) l.forEach(n => fruits[fid(n)] = { id:fid(n), name:n, rarity:r, value:0, permValue:0, demand:0 });
+try {
+  const snap = await getDocs(collection(db, "fruits"));
+  snap.docs.forEach(d => { const x = d.data(); fruits[d.id] = { ...(fruits[d.id]||{}), id:d.id, ...x, rarity: x.rarity || rarityOf[(x.name||"").toLowerCase()] || "Common" }; });
+} catch (e) { $("info").textContent = "Impossible de lire les valeurs (règles Firebase)."; }
+const list = Object.values(fruits).sort((a,b)=>(b.value||0)-(a.value||0));
+const noVal = list.every(f => !f.value);
+if (noVal) $("info").textContent = "⚠️ Aucune valeur saisie pour l'instant : le staff doit remplir les valeurs dans l'admin.";
 
-function render(k, title) {
-  const el = document.getElementById(k);
-  const items = side[k];
-  const tot = items.reduce((s,i)=>s+i.val,0);
-  const dem = items.length ? items.reduce((s,i)=>s+(i.f.demand||0),0)/items.length : 0;
-  el.innerHTML = `<h2 style="margin-bottom:14px">${title}</h2>
-    <select id="sel${k}"><option value="">➕ Ajouter un fruit…</option>${fruits.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select>
-    <label style="display:flex;gap:8px;align-items:center;margin:-6px 0 14px"><input type="checkbox" id="perm${k}" style="width:auto;margin:0"> Version permanente</label>
-    ${items.map((i,n)=>`<div class="slot"><div><b>${esc(i.f.name)}</b>${i.perm?" <small>(perm)</small>":""}<br><small>${fmt(i.val)} · <span class="dem">Demande ${i.f.demand||0}/10</span></small></div>
-      <button class="red small" data-k="${k}" data-n="${n}">✕</button></div>`).join("")}
-    <div class="tot">Valeur totale : <b>${fmt(tot)}</b><br>Demande moyenne : <b>${dem.toFixed(1)}/10</b> ${items.length?`<span class="dem">${demandLabel(dem)}</span>`:""}</div>`;
-  document.getElementById("sel"+k).onchange = e => {
-    const f = fruits.find(x=>x.id===e.target.value); if(!f) return;
-    const perm = document.getElementById("perm"+k).checked && f.permValue;
-    side[k].push({ f, perm: !!perm, val: perm ? f.permValue : (f.value||0) });
-    update();
-  };
-  el.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { side[k].splice(+b.dataset.n,1); update(); });
-  return { tot, dem };
+const side = { A:[null,null,null,null], B:[null,null,null,null] };
+let target = null, tab = "Tous";
+const icon = f => `<div class="ic r-${f.rarity}">${esc(f.name.slice(0,2))}</div>`;
+
+function renderSide(k){
+  $(k).innerHTML = side[k].map((s,i)=> s ? `<div class="slot full" data-k="${k}" data-i="${i}">
+      ${s.perm?'<span class="perm">PERM</span>':''}<span class="x" data-del="1">✕</span>${icon(s.f)}<b>${esc(s.f.name)}</b><small>${fmt(s.val)} · D ${s.f.demand||0}/10</small></div>`
+    : `<div class="slot" data-k="${k}" data-i="${i}"><span class="plus">＋</span><small>Ajouter</small></div>`).join("");
+  $(k).querySelectorAll(".slot").forEach(el => el.onclick = e => {
+    const k=el.dataset.k, i=+el.dataset.i;
+    if (e.target.dataset.del) { side[k][i]=null; update(); return; }
+    target = {k,i}; openPicker();
+  });
+  const it = side[k].filter(Boolean), tot = it.reduce((s,x)=>s+x.val,0);
+  const dem = it.length ? it.reduce((s,x)=>s+(x.f.demand||0),0)/it.length : 0;
+  $("sum"+k).innerHTML = `Valeur totale : <b>${fmt(tot)}</b><br>Demande moyenne : <b>${dem.toFixed(1)}/10</b>`;
+  return { tot, dem, n: it.length };
 }
-function update() {
-  const a = render("A","🟣 Toi"), b = render("B","⚫ Lui / Elle");
-  const v = document.getElementById("verdict");
-  if (!side.A.length || !side.B.length) { v.className="verdict fair"; v.textContent="Ajoute des fruits pour comparer"; return; }
-  // Score = valeur ajustée par la demande (une demande forte vaut un peu plus)
-  const sc = (t,d) => t * (0.8 + d*0.04);
-  const sa = sc(a.tot,a.dem), sb = sc(b.tot,b.dem);
+function update(){
+  const a = renderSide("A"), b = renderSide("B"), v = $("verdict");
+  const t = a.tot + b.tot; $("barA").style.width = (t? a.tot/t*100 : 50)+"%"; $("barB").style.width = (t? b.tot/t*100 : 50)+"%";
+  if (!a.n || !b.n) { v.className="verdict fair"; v.textContent="Ajoute des fruits pour comparer"; return; }
+  if (!a.tot && !b.tot) { v.className="verdict fair"; v.textContent="Valeurs pas encore renseignées"; return; }
+  const sc = (x,d) => x * (0.8 + d*0.04), sa = sc(a.tot,a.dem), sb = sc(b.tot,b.dem);
   const diff = (sb - sa) / Math.max(sa,1) * 100;
-  if (Math.abs(diff) <= 5) { v.className="verdict fair"; v.textContent=`⚖️ Trade équitable (${diff>0?"+":""}${diff.toFixed(0)} %)`; }
-  else if (diff > 0) { v.className="verdict win"; v.textContent=`✅ WIN : tu gagnes ~${diff.toFixed(0)} %`; }
-  else { v.className="verdict lose"; v.textContent=`❌ LOSE : tu perds ~${Math.abs(diff).toFixed(0)} %`; }
+  if (Math.abs(diff) <= 5) { v.className="verdict fair"; v.textContent=`⚖️ FAIR (${diff>0?"+":""}${diff.toFixed(0)} %)`; }
+  else if (diff > 0) { v.className="verdict win"; v.textContent=`✅ WIN : +${diff.toFixed(0)} %`; }
+  else { v.className="verdict lose"; v.textContent=`❌ LOSE : ${diff.toFixed(0)} %`; }
 }
+function openPicker(){ $("modal").classList.add("show"); $("search").value=""; renderPicker(); $("search").focus(); }
+function renderPicker(){
+  const tabs = ["Tous","Mythical","Legendary","Rare","Uncommon","Common"];
+  $("tabs").innerHTML = tabs.map(t=>`<button class="${t===tab?"on":""}" data-t="${t}">${t}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;renderPicker();});
+  const q = $("search").value.trim().toLowerCase();
+  const L = list.filter(f => (tab==="Tous"||f.rarity===tab) && f.name.toLowerCase().includes(q));
+  $("fgrid").innerHTML = L.map(f=>`<div class="fruit" data-id="${f.id}">${icon(f)}<b>${esc(f.name)}</b><small>${fmt(f.value||0)}${f.permValue?" · Perm "+fmt(f.permValue):""}</small><small>Demande ${f.demand||0}/10</small></div>`).join("") || '<p style="color:#777">Aucun fruit</p>';
+  $("fgrid").querySelectorAll(".fruit").forEach(el=>el.onclick=()=>{
+    const f = fruits[el.dataset.id], perm = $("permChk").checked && f.permValue>0;
+    side[target.k][target.i] = { f, perm, val: perm ? f.permValue : (f.value||0) };
+    $("modal").classList.remove("show"); update();
+  });
+}
+$("search").oninput = renderPicker;
+$("close").onclick = () => $("modal").classList.remove("show");
+$("modal").onclick = e => { if (e.target.id==="modal") $("modal").classList.remove("show"); };
+$("reset").onclick = () => { side.A=[null,null,null,null]; side.B=[null,null,null,null]; update(); };
 update();
 </script>
 <script type="module" src="nav.js"></script>

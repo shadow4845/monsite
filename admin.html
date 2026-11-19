@@ -65,6 +65,11 @@
       <div><button type="submit" style="margin-bottom:16px">Enregistrer</button></div>
     </form>
     <button class="grey small" id="seedFruits">Importer la liste des fruits (valeurs à 0)</button>
+    <details style="margin:12px 0"><summary style="cursor:pointer">⚡ Saisie rapide (plusieurs fruits d'un coup)</summary>
+      <p style="color:#aaa;font-size:13px;margin:8px 0">Une ligne par fruit : <code>Nom;Valeur;ValeurPerm;Demande</code> — ex. <code>Dragon;3500000;5000000;10</code></p>
+      <textarea id="bulkFruits" rows="8" placeholder="Dragon;3500000;5000000;10&#10;Kitsune;2500000;4000000;9"></textarea>
+      <button class="small" id="bulkSave">Enregistrer tout</button>
+    </details>
     <div class="msg" id="fruitMsg"></div>
     <table><thead><tr><th>Fruit</th><th>Valeur</th><th>Perm</th><th>Demande</th><th></th></tr></thead><tbody id="fruitList"></tbody></table>
   </div>
@@ -164,6 +169,11 @@ $("seedFruits").onclick = async () => {
   for (const n of NAMES) { const r=doc(db,"fruits",fid(n)); const s=await getDoc(r); if(!s.exists()) await setDoc(r,{name:n,value:0,permValue:0,demand:0}); }
   $("fruitMsg").textContent="Liste importée ✔ Remplis maintenant les valeurs et la demande."; $("fruitMsg").className="msg ok"; loadFruits(); };
 loadFruits();
+$("bulkSave").onclick = async () => {
+  const lines = $("bulkFruits").value.split("\n").map(l=>l.trim()).filter(Boolean); let n=0;
+  for (const l of lines) { const [name,v,p,d] = l.split(/[;,\t]/).map(x=>x.trim()); if(!name) continue;
+    await setDoc(doc(db,"fruits",fid(name)),{name,value:+v||0,permValue:+p||0,demand:Math.min(10,+d||0)}); n++; }
+  $("fruitMsg").textContent = n+" fruits enregistrés ✔"; $("fruitMsg").className="msg ok"; loadFruits(); };
 
 </script>
 <script type="module" src="nav.js"></script>
