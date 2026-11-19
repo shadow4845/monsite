@@ -1,0 +1,31 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { min-height: 100vh; color: #eee;
+  background: radial-gradient(circle at 20% 10%, #3b0a6b, transparent 45%),
+              radial-gradient(circle at 85% 90%, #0a3b6b, transparent 45%), #0b0b14; }
+a { color: #a855f7; }
+.center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.card { background: rgba(20,20,35,.85); backdrop-filter: blur(10px); border: 1px solid rgba(160,90,255,.35);
+  box-shadow: 0 0 40px rgba(140,70,255,.2); border-radius: 18px; padding: 32px; }
+.grad { background: linear-gradient(90deg,#a855f7,#38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+label { display: block; font-size: 13px; color: #bbb; margin-bottom: 6px; }
+input, textarea, select { width: 100%; padding: 12px 14px; margin-bottom: 16px; border-radius: 10px; border: 1px solid #333;
+  background: #12121f; color: #fff; font-size: 15px; outline: none; }
+input:focus, textarea:focus { border-color: #a855f7; }
+button, .btn { display: inline-block; padding: 12px 18px; border: none; border-radius: 10px; cursor: pointer; font-size: 15px;
+  font-weight: 600; color: #fff; text-decoration: none; background: linear-gradient(90deg,#a855f7,#3b82f6); }
+button:hover, .btn:hover { opacity: .9; }
+button.small { padding: 6px 12px; font-size: 13px; }
+button.red { background: #dc2626; } button.grey { background: #374151; }
+.msg { text-align: center; margin-top: 14px; font-size: 14px; min-height: 18px; }
+.err { color: #f87171; } .ok { color: #4ade80; }
+nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px;
+  background: rgba(10,10,20,.7); border-bottom: 1px solid #2a2a40; position: sticky; top: 0; backdrop-filter: blur(8px); }
+nav .links { display: flex; gap: 12px; align-items: center; }
+main { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 18px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid #2a2a40; }
+.badge { padding: 3px 10px; border-radius: 99px; font-size: 12px; background: #374151; }
+.badge.admin { background: #7c3aed; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 9; }
+.modal.show { display: flex; }

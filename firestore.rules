@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isOwner() { return signedIn() && request.auth.token.email == 'nemesisshadow@monsite.app'; }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // Création de son propre profil : rôle "user", sauf le propriétaire qui peut être admin
+      allow create: if signedIn() && request.auth.uid == uid &&
+        (request.resource.data.role == 'user' || (isOwner() && request.resource.data.role == 'admin'));
+      // Un utilisateur peut seulement désactiver mustChangePassword ; l'admin peut tout modifier
+      allow update: if isAdmin() || (request.auth.uid == uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword']) &&
+        request.resource.data.mustChangePassword == false);
+      allow delete: if isAdmin();
+    }
+    match /posts/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /site/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

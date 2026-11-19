@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Shadow</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <b class="grad" style="font-size:20px">Shadow · Admin</b>
+  <div class="links">
+    <a href="user.html" class="btn" style="padding:8px 14px">Voir le site</a>
+    <button class="grey small" id="logout">Déconnexion</button>
+  </div>
+</nav>
+
+<main style="display:flex;flex-direction:column;gap:24px">
+  <div class="card">
+    <h2 style="margin-bottom:16px">➕ Ajouter une actu</h2>
+    <form id="postForm">
+      <label>Titre</label><input id="pTitle" required maxlength="100">
+      <label>Contenu</label><textarea id="pContent" rows="4" required maxlength="2000"></textarea>
+      <button type="submit">Publier</button>
+    </form>
+    <div class="msg" id="postMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:16px">📰 Actus publiées</h2>
+    <table><thead><tr><th>Titre</th><th>Date</th><th></th></tr></thead><tbody id="postList"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:16px">✏️ Ma présentation</h2>
+    <label>Bio affichée sur le site</label>
+    <textarea id="bio" rows="3" maxlength="500"></textarea>
+    <button id="saveBio">Enregistrer</button>
+    <div class="msg" id="bioMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:16px">👥 Utilisateurs</h2>
+    <table><thead><tr><th>Pseudo</th><th>Rôle</th><th>Inscrit le</th><th>Actions</th></tr></thead><tbody id="userList"></tbody></table>
+  </div>
+</main>
+
+<script type="module">
+import { requireAuth, auth, signOut, db, collection, getDocs, addDoc, deleteDoc, updateDoc, setDoc, getDoc, doc,
+         query, orderBy, serverTimestamp } from "./app.js";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const date = t => t ? t.toDate().toLocaleDateString("fr-FR") : "";
+
+const { user } = await requireAuth(true);
+$("logout").onclick = async () => { await signOut(auth); location.href = "index.html"; };
+
+// ---- Actus
+async function loadPosts() {
+  const snap = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+  $("postList").innerHTML = snap.docs.map(d => `<tr><td>${esc(d.data().title)}</td><td>${date(d.data().createdAt)}</td>
+    <td><button class="red small" data-del="${d.id}">Supprimer</button></td></tr>`).join("") || '<tr><td colspan="3" style="color:#777">Aucune actu</td></tr>';
+  $("postList").querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    if (confirm("Supprimer cette actu ?")) { await deleteDoc(doc(db, "posts", b.dataset.del)); loadPosts(); }
+  });
+}
+$("postForm").onsubmit = async e => {
+  e.preventDefault();
+  await addDoc(collection(db, "posts"), { title: $("pTitle").value, content: $("pContent").value, createdAt: serverTimestamp() });
+  e.target.reset(); $("postMsg").textContent = "Publié ✔"; $("postMsg").className = "msg ok"; loadPosts();
+};
+
+// ---- Bio
+const s = await getDoc(doc(db, "site", "settings"));
+$("bio").value = s.exists() ? (s.data().bio || "") : "Streamer sur Twitch 🎮 — viens me rejoindre en live et sur le Discord !";
+$("saveBio").onclick = async () => {
+  await setDoc(doc(db, "site", "settings"), { bio: $("bio").value }, { merge: true });
+  $("bioMsg").textContent = "Enregistré ✔"; $("bioMsg").className = "msg ok";
+};
+
+// ---- Utilisateurs
+async function loadUsers() {
+  const snap = await getDocs(collection(db, "users"));
+  $("userList").innerHTML = snap.docs.map(d => {
+    const u = d.data(), me = d.id === user.uid;
+    return `<tr><td>${esc(u.pseudo)}${me ? " (toi)" : ""}</td>
+      <td><span class="badge ${u.role === "admin" ? "admin" : ""}">${u.role}</span></td>
+      <td>${date(u.createdAt)}</td>
+      <td>${me ? "" : `<button class="small" data-role="${d.id}" data-cur="${u.role}">${u.role === "admin" ? "Retirer admin" : "Passer admin"}</button>
+        <button class="red small" data-ban="${d.id}">Supprimer</button>`}</td></tr>`;
+  }).join("");
+  $("userList").querySelectorAll("[data-role]").forEach(b => b.onclick = async () => {
+    await updateDoc(doc(db, "users", b.dataset.role), { role: b.dataset.cur === "admin" ? "user" : "admin" }); loadUsers();
+  });
+  $("userList").querySelectorAll("[data-ban]").forEach(b => b.onclick = async () => {
+    if (confirm("Supprimer cet utilisateur du site ?")) { await deleteDoc(doc(db, "users", b.dataset.ban)); loadUsers(); }
+  });
+}
+loadPosts(); loadUsers();
+</script>
+</body>
+</html>

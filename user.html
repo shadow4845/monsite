@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow – Présentation</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero { text-align: center; padding: 50px 20px 30px; }
+  .avatar { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center;
+    justify-content: center; font-size: 54px; font-weight: 800; background: linear-gradient(135deg,#a855f7,#3b82f6);
+    box-shadow: 0 0 40px rgba(168,85,247,.5); }
+  .hero h1 { font-size: 42px; margin-bottom: 10px; }
+  .socials { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin: 28px 0 40px; }
+  .social { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 14px; color: #fff;
+    text-decoration: none; font-weight: 600; transition: transform .15s; }
+  .social:hover { transform: translateY(-3px); }
+  .twitch { background: #9146ff; } .discord { background: #5865f2; }
+  .twitch-embed { border-radius: 16px; overflow: hidden; border: 1px solid #2a2a40; aspect-ratio: 16/9; margin-bottom: 40px; }
+  .post h3 { margin-bottom: 8px; } .post p { color: #bbb; white-space: pre-wrap; }
+  .post small { color: #666; display: block; margin-top: 10px; }
+</style>
+</head>
+<body>
+<nav>
+  <b class="grad" style="font-size:20px">Shadow</b>
+  <div class="links">
+    <span id="hello" style="color:#aaa;font-size:14px"></span>
+    <a href="admin.html" id="adminLink" class="btn" style="display:none;padding:8px 14px">Admin</a>
+    <button class="grey small" id="logout">Déconnexion</button>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="avatar">S</div>
+    <h1 class="grad">NemesisShadow</h1>
+    <p id="bio" style="color:#bbb;max-width:600px;margin:0 auto">Streamer sur Twitch 🎮 — viens me rejoindre en live et sur le Discord !</p>
+    <div class="socials">
+      <a class="social twitch" href="https://www.twitch.tv/shadow__officielle" target="_blank" rel="noopener">📺 Twitch</a>
+      <a class="social discord" href="https://discord.gg/BXVpZacBfu" target="_blank" rel="noopener">💬 Discord</a>
+    </div>
+  </section>
+
+  <div class="twitch-embed" id="embed"></div>
+
+  <h2 style="margin-bottom:16px">📢 Actus</h2>
+  <div class="grid" id="posts"><p style="color:#777">Chargement…</p></div>
+</main>
+
+<script type="module">
+import { requireAuth, auth, signOut, db, collection, getDocs, query, orderBy, doc, getDoc } from "./app.js";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const { profile } = await requireAuth();
+$("hello").textContent = "Salut " + profile.pseudo;
+if (profile.role === "admin") $("adminLink").style.display = "inline-block";
+$("logout").onclick = async () => { await signOut(auth); location.href = "index.html"; };
+
+// Lecteur Twitch (le paramètre parent doit être le domaine du site)
+$("embed").innerHTML = `<iframe src="https://player.twitch.tv/?channel=shadow__officielle&parent=${location.hostname}&muted=true"
+  width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+
+// Bio modifiable depuis l'admin
+const s = await getDoc(doc(db, "site", "settings"));
+if (s.exists() && s.data().bio) $("bio").textContent = s.data().bio;
+
+// Actus ajoutées depuis l'admin
+const snap = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+$("posts").innerHTML = snap.empty ? '<p style="color:#777">Aucune actu pour le moment.</p>' :
+  snap.docs.map(d => { const p = d.data(); return `<div class="card post"><h3>${esc(p.title)}</h3><p>${esc(p.content)}</p>
+    <small>${p.createdAt ? p.createdAt.toDate().toLocaleDateString("fr-FR") : ""}</small></div>`; }).join("");
+</script>
+</body>
+</html>
