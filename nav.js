@@ -25,8 +25,9 @@ onAuthStateChanged(auth, async u => {
   const p = await getProfile(u.uid).catch(() => null);
   document.getElementById("authZone").innerHTML = `
     <a class="pill discord" href="https://discord.gg/BXVpZacBfu" target="_blank" rel="noopener">Discord</a>
-    <a class="pill profile" href="user.html"><img src="logo.png" alt="">${p ? p.pseudo : "Mon profil"}</a>
+    <a class="pill profile" href="user.html"><img src="${p && p.photo ? p.photo.replace(/"/g,"") : "logo.png"}" alt="" onerror="this.src='logo.png'">${p ? p.pseudo : "Mon profil"}</a>
     ${p && p.role === "admin" ? '<a class="pill admin" href="admin.html">⚙️ Admin</a>' : ""}
+    <a class="pill ghost" href="settings.html" title="Paramètres">⚙️</a>
     <button class="pill ghost" id="navOut">Déconnexion</button>`;
   document.getElementById("navOut").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 });

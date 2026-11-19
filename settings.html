@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paramètres – Shadow</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="banner">
+<main style="max-width:700px;display:flex;flex-direction:column;gap:20px">
+  <h1 class="grad" style="font-size:36px;margin-top:18px">⚙️ Paramètres</h1>
+
+  <div class="card">
+    <h2 style="margin-bottom:14px">🖼️ Photo de profil</h2>
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px">
+      <img id="pvw" src="logo.png" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;box-shadow:0 0 16px #a855f7">
+      <p style="color:#aaa;font-size:14px">Colle le lien d'une image (Imgur, Discord, postimg…)</p>
+    </div>
+    <input id="photo" placeholder="https://...">
+    <button id="savePhoto">Enregistrer la photo</button>
+    <div class="msg" id="photoMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:6px">📧 Adresse Gmail</h2>
+    <p style="color:#aaa;font-size:14px;margin-bottom:14px">Actuelle : <b id="curMail"></b><br>Après validation par e-mail, tu te connecteras avec ton Gmail, et tu pourras réinitialiser ton mot de passe.</p>
+    <label>Nouveau Gmail</label><input id="mail" type="email" placeholder="toi@gmail.com">
+    <label>Mot de passe actuel</label><input id="mailPass" type="password">
+    <button id="saveMail">Envoyer l'e-mail de validation</button>
+    <div class="msg" id="mailMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:14px">🔒 Changer le mot de passe</h2>
+    <label>Mot de passe actuel</label><input id="oldPass" type="password">
+    <label>Nouveau mot de passe</label><input id="newPass" type="password" minlength="6">
+    <label>Confirmer</label><input id="newPass2" type="password" minlength="6">
+    <button id="savePass">Changer le mot de passe</button>
+    <div class="msg" id="passMsg"></div>
+  </div>
+</main>
+<script type="module">
+import { requireAuth, auth, db, doc, updateDoc, updatePassword, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail, errMsg } from "./app.js";
+const $ = id => document.getElementById(id);
+const show = (id,t,c) => { $(id).textContent=t; $(id).className="msg "+c; };
+const { user, profile } = await requireAuth();
+$("curMail").textContent = user.email.endsWith("@monsite.app") ? "aucune (connexion par pseudo)" : user.email;
+if (profile.photo) { $("pvw").src = profile.photo; $("photo").value = profile.photo; }
+$("photo").oninput = () => { if ($("photo").value.startsWith("http")) $("pvw").src = $("photo").value; };
+$("savePhoto").onclick = async () => {
+  const v = $("photo").value.trim();
+  if (v && !/^https:\/\//.test(v)) return show("photoMsg","Le lien doit commencer par https://","err");
+  try { await updateDoc(doc(db,"users",user.uid),{ photo:v }); show("photoMsg","Photo enregistrée ✔","ok"); }
+  catch(e){ show("photoMsg",errMsg(e),"err"); }
+};
+const reauth = p => reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, p));
+$("saveMail").onclick = async () => {
+  const m = $("mail").value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)) return show("mailMsg","Adresse invalide","err");
+  try { await reauth($("mailPass").value); await verifyBeforeUpdateEmail(user, m);
+    await updateDoc(doc(db,"users",user.uid),{ email:m });
+    show("mailMsg","E-mail envoyé à "+m+" ✔ Clique sur le lien reçu, puis reconnecte-toi avec ce Gmail.","ok"); }
+  catch(e){ show("mailMsg",errMsg(e),"err"); }
+};
+$("savePass").onclick = async () => {
+  if ($("newPass").value !== $("newPass2").value) return show("passMsg","Les mots de passe ne correspondent pas","err");
+  try { await reauth($("oldPass").value); await updatePassword(user,$("newPass").value); show("passMsg","Mot de passe changé ✔","ok");
+    ["oldPass","newPass","newPass2"].forEach(i=>$(i).value=""); }
+  catch(e){ show("passMsg",errMsg(e),"err"); }
+};
+</script>
+<script type="module" src="nav.js"></script>
+</body>
+</html>

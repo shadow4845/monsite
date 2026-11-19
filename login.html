@@ -14,8 +14,8 @@
     <p id="subtitle" style="text-align:center;color:#999;margin-bottom:24px;font-size:14px">Connecte-toi pour continuer</p>
 
     <form id="form">
-      <label>Pseudo</label>
-      <input id="user" placeholder="Ton pseudo" required autocomplete="username">
+      <label id="userLbl">Pseudo ou Gmail</label>
+      <input id="user" placeholder="Pseudo ou Gmail" required autocomplete="username">
       <label>Mot de passe</label>
       <input id="pass" type="password" placeholder="••••••••" required autocomplete="current-password">
       <div id="pass2wrap" style="display:none">
@@ -23,6 +23,7 @@
         <input id="pass2" type="password" placeholder="••••••••" autocomplete="new-password">
       </div>
       <button type="submit" id="btn" style="width:100%">Se connecter</button>
+      <p style="text-align:right;margin-top:10px;font-size:13px"><a href="#" id="forgot">Mot de passe oublié ?</a></p>
     </form>
 
     <!-- Changement de mot de passe (1re connexion) -->
@@ -43,7 +44,7 @@
 </div>
 
 <script type="module">
-import { auth, login, register, getProfile, errMsg, updatePassword, updateDoc, doc, db, onAuthStateChanged } from "./app.js";
+import { auth, login, register, getProfile, errMsg, updatePassword, updateDoc, doc, db, onAuthStateChanged, sendPasswordResetEmail } from "./app.js";
 const $ = id => document.getElementById(id);
 let mode = "login", busy = false;
 
@@ -99,6 +100,14 @@ $("changeForm").onsubmit = async e => {
     show("Mot de passe changé ✔", "ok");
     setTimeout(() => route(auth.currentUser), 800);
   } catch (err) { show(errMsg(err), "err"); }
+};
+
+$("forgot").onclick = async e => {
+  e.preventDefault();
+  const m = $("user").value.trim();
+  if (!m.includes("@")) return show("Écris ton Gmail dans la case du haut. (Les comptes sans Gmail ne peuvent pas réinitialiser : demande à un admin.)", "err");
+  try { await sendPasswordResetEmail(auth, m); show("E-mail de réinitialisation envoyé à " + m + " ✔ (regarde aussi les spams)", "ok"); }
+  catch (err) { show(errMsg(err), "err"); }
 };
 
 // Déjà connecté ? on redirige directement

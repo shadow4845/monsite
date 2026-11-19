@@ -14,8 +14,8 @@ service cloud.firestore {
         (request.resource.data.role == 'user' || (isOwner() && request.resource.data.role == 'admin'));
       // Un utilisateur peut seulement désactiver firstLogin ; l'admin peut tout modifier
       allow update: if isAdmin() || (request.auth.uid == uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstLogin']) &&
-        request.resource.data.firstLogin == false);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstLogin','photo','email']) &&
+        request.resource.data.get('firstLogin', false) == false);
       allow delete: if isAdmin();
     }
     match /posts/{id} {

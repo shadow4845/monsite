@@ -1,7 +1,8 @@
 // Code partagé : Firebase, connexion, rôles
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
-         onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+         onAuthStateChanged, updatePassword, sendPasswordResetEmail,
+         EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, addDoc,
          query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -10,11 +11,12 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy,
-         serverTimestamp, signOut, updatePassword, onAuthStateChanged };
+         serverTimestamp, signOut, updatePassword, onAuthStateChanged, sendPasswordResetEmail,
+         EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail };
 
 export const OWNER = "nemesisshadow";            // ton pseudo (en minuscules)
 const OWNER_FIRST_PASS = "azerty";              // mot de passe de départ, à changer à la 1re connexion
-export const toEmail = p => `${p.trim().toLowerCase()}@monsite.app`;
+export const toEmail = p => p.includes("@") ? p.trim().toLowerCase() : `${p.trim().toLowerCase()}@monsite.app`;
 
 // Connexion par pseudo
 export async function login(pseudo, pass) {
@@ -67,6 +69,9 @@ export function errMsg(e) {
     "auth/email-already-in-use": "Ce pseudo est déjà pris",
     "auth/weak-password": "Mot de passe trop court (6 caractères minimum)",
     "auth/too-many-requests": "Trop d'essais, réessaie dans quelques minutes",
-    "pseudo": "Pseudo : 3 à 20 caractères (lettres, chiffres, _)"
+    "pseudo": "Pseudo : 3 à 20 caractères (lettres, chiffres, _)",
+    "auth/invalid-email": "Adresse e-mail invalide",
+    "auth/requires-recent-login": "Reconnecte-toi puis réessaie",
+    "auth/operation-not-allowed": "Fonction pas encore activée dans Firebase"
   })[e.code] || ("Erreur : " + (e.message || e.code));
 }
