@@ -31,3 +31,26 @@ th, td { text-align: left; padding: 10px; border-bottom: 1px solid #2a2a40; }
 .modal.show { display: flex; }
 
 body.banner { background: linear-gradient(rgba(5,0,15,.55),rgba(5,0,15,.85)), url('banner.jpg') center/cover fixed, #0b0b14; }
+
+/* Barre du haut */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;padding:12px 28px;
+  background:rgba(8,3,16,.82);backdrop-filter:blur(10px);border-bottom:1px solid rgba(168,85,247,.25)}
+.topbar .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:20px;color:#fff}
+.topbar .brand img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 14px #a855f7}
+.topbar .menu{display:flex;gap:4px;flex:1}
+.topbar .menu a{color:#cfc6dd;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:15px;transition:.15s}
+.topbar .menu a:hover,.topbar .menu a.active{color:#fff;background:rgba(168,85,247,.18)}
+.topbar .right{display:flex;gap:8px;align-items:center}
+.topbar .right span{display:flex;gap:8px}
+.pill{display:inline-block;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;
+  background:linear-gradient(90deg,#7c3aed,#a855f7);border:none;cursor:pointer}
+.pill.discord{background:#5865f2} .pill.ghost{background:transparent;border:1px solid #6b4a9a}
+.burger{display:none;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:0;margin-left:auto}
+@media(max-width:900px){
+  .topbar{flex-wrap:wrap}.burger{display:block}
+  .topbar .menu,.topbar .right{display:none;width:100%;flex-direction:column}
+  .topbar.open .menu,.topbar.open .right{display:flex}
+  .topbar .right span{flex-direction:column}
+}
+.faq details{background:rgba(20,10,35,.75);border:1px solid #2a2a40;border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.faq summary{cursor:pointer;font-weight:600}.faq p{color:#bbb;margin-top:10px;line-height:1.6}

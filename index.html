@@ -55,6 +55,11 @@
   <div class="card"><p style="color:#ccc;line-height:1.7">Shadow, c'est la communauté autour des streams de NemesisShadow. On y parle Blox Fruits, on organise des trades et des events, et on se retrouve pendant les lives.</p></div>
 </section>
 
+<section id="live">
+  <h2 class="grad">📺 Le live</h2>
+  <div style="border-radius:16px;overflow:hidden;border:1px solid #2a2a40;aspect-ratio:16/9" id="liveEmbed"></div>
+</section>
+
 <section id="rejoindre">
   <h2 class="grad">Comment rejoindre ?</h2>
   <div class="steps">
@@ -63,6 +68,25 @@
     <div class="step">Présente-toi et viens aux lives !</div>
   </div>
   <div class="cta" style="margin-top:24px"><a class="btn discord" href="https://discord.gg/BXVpZacBfu" target="_blank" rel="noopener">💬 Rejoindre le Discord</a></div>
+</section>
+
+<section id="reglement">
+  <h2 class="grad">📜 Règlement</h2>
+  <div class="card" style="color:#ccc;line-height:1.9">
+    1. Respect de tout le monde : pas d'insultes, de harcèlement ni de discrimination.<br>
+    2. Pas de spam, de pub ou de liens douteux.<br>
+    3. Pas d'arnaque en trade : un scam signalé = ban.<br>
+    4. Pas de contenu choquant ou NSFW.<br>
+    5. Les décisions du staff sont à respecter.
+  </div>
+</section>
+
+<section id="faq" class="faq">
+  <h2 class="grad">❓ FAQ</h2>
+  <details><summary>Comment rejoindre le Discord ?</summary><p>Clique sur le bouton « Discord » en haut de la page.</p></details>
+  <details><summary>Le calculateur de trades est-il gratuit ?</summary><p>Oui, et il n'y a même pas besoin de compte pour l'utiliser.</p></details>
+  <details><summary>D'où viennent les valeurs des fruits ?</summary><p>Elles sont mises à jour à la main par le staff, en fonction du marché.</p></details>
+  <details><summary>Quand sont les lives ?</summary><p>Les annonces de live sont postées sur le Discord.</p></details>
 </section>
 
 <footer>© Shadow · <a href="https://www.twitch.tv/shadow__officielle" target="_blank" rel="noopener">Twitch</a></footer>
@@ -75,6 +99,8 @@ fetch("https://discord.com/api/v9/invites/BXVpZacBfu?with_counts=true")
     if (d.approximate_member_count != null) document.getElementById("members").textContent = d.approximate_member_count.toLocaleString("fr-FR");
     if (d.approximate_presence_count != null) document.getElementById("online").textContent = d.approximate_presence_count.toLocaleString("fr-FR");
   }).catch(() => {});
+document.getElementById("liveEmbed").innerHTML = `<iframe src="https://player.twitch.tv/?channel=shadow__officielle&parent=${location.hostname}&muted=true" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
 </script>
+<script type="module" src="nav.js"></script>
 </body>
 </html>

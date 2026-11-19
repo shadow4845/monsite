@@ -73,5 +73,6 @@ $("posts").innerHTML = snap.empty ? '<p style="color:#777">Aucune actu pour le m
   snap.docs.map(d => { const p = d.data(); return `<div class="card post"><h3>${esc(p.title)}</h3><p>${esc(p.content)}</p>
     <small>${p.createdAt ? p.createdAt.toDate().toLocaleDateString("fr-FR") : ""}</small></div>`; }).join("");
 </script>
+<script type="module" src="nav.js"></script>
 </body>
 </html>
