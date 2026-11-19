@@ -27,7 +27,7 @@ export async function login(pseudo, pass) {
         (e.code === "auth/invalid-credential" || e.code === "auth/user-not-found")) {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await setDoc(doc(db, "users", cred.user.uid),
-        { pseudo: pseudo.trim(), role: "admin", mustChangePassword: true, createdAt: serverTimestamp() });
+        { pseudo: pseudo.trim(), role: "admin", firstLogin: true, createdAt: serverTimestamp() });
       return cred;
     }
     throw e;
@@ -39,7 +39,7 @@ export async function register(pseudo, pass) {
   if (pseudo.trim().toLowerCase() === OWNER) throw { code: "auth/email-already-in-use" };
   const cred = await createUserWithEmailAndPassword(auth, toEmail(pseudo), pass);
   await setDoc(doc(db, "users", cred.user.uid),
-    { pseudo: pseudo.trim(), role: "user", mustChangePassword: false, createdAt: serverTimestamp() });
+    { pseudo: pseudo.trim(), role: "user", firstLogin: false, createdAt: serverTimestamp() });
   return cred;
 }
 
@@ -53,7 +53,7 @@ export function requireAuth(needAdmin = false) {
   return new Promise(res => onAuthStateChanged(auth, async user => {
     if (!user) return (location.href = "login.html");
     const profile = await getProfile(user.uid);
-    if (!profile || profile.mustChangePassword) return (location.href = "login.html");
+    if (!profile || profile.firstLogin) return (location.href = "login.html");
     if (needAdmin && profile.role !== "admin") return (location.href = "user.html");
     res({ user, profile });
   }));

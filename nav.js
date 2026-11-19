@@ -2,7 +2,7 @@
 import { auth, onAuthStateChanged, signOut, getProfile } from "./app.js";
 const here = location.pathname.split("/").pop() || "index.html";
 const links = [
-  ["Accueil","index.html"],["Streameurs","streamers.html"],["Trades","trade.html"],
+  ["Accueil","index.html"],["Streameurs","streamers.html"],["Trades","trade.html"],["Values","https://bloxfruitsvalues.com/"],
   ["Règlement","reglement.html"],["FAQ","index.html#faq"]
 ];
 const bar = document.createElement("header");
@@ -10,7 +10,7 @@ bar.className = "topbar";
 bar.innerHTML = `
   <div class="left">
     <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Shadow</span></a>
-    <nav class="menu">${links.map(([t,h])=>`<a href="${h}" class="${h===here?"active":""}">${t}</a>`).join("")}</nav>
+    <nav class="menu">${links.map(([t,h])=>`<a href="${h}" class="${h===here?"active":""}"${h.startsWith("http")?' target="_blank" rel="noopener"':""}>${t}</a>`).join("")}</nav>
   </div>
   <button class="burger" aria-label="Menu">☰</button>
   <div class="right" id="authZone">

@@ -65,7 +65,7 @@ $("toggle").onclick = e => {
 async function route(user) {
   const p = await getProfile(user.uid);
   if (!p) return show("Profil introuvable", "err");
-  if (p.mustChangePassword) {
+  if (p.firstLogin) {
     $("form").style.display = "none"; $("switch").style.display = "none";
     $("changeForm").style.display = "block";
     $("title").textContent = "Bienvenue " + p.pseudo; $("subtitle").textContent = "";
@@ -95,7 +95,7 @@ $("changeForm").onsubmit = async e => {
   if (a === "azerty") return show("Choisis un mot de passe différent de l'ancien", "err");
   try {
     await updatePassword(auth.currentUser, a);
-    await updateDoc(doc(db, "users", auth.currentUser.uid), { mustChangePassword: false });
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { firstLogin: false });
     show("Mot de passe changé ✔", "ok");
     setTimeout(() => route(auth.currentUser), 800);
   } catch (err) { show(errMsg(err), "err"); }

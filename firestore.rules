@@ -12,10 +12,10 @@ service cloud.firestore {
       // Création de son propre profil : rôle "user", sauf le propriétaire qui peut être admin
       allow create: if signedIn() && request.auth.uid == uid &&
         (request.resource.data.role == 'user' || (isOwner() && request.resource.data.role == 'admin'));
-      // Un utilisateur peut seulement désactiver mustChangePassword ; l'admin peut tout modifier
+      // Un utilisateur peut seulement désactiver firstLogin ; l'admin peut tout modifier
       allow update: if isAdmin() || (request.auth.uid == uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword']) &&
-        request.resource.data.mustChangePassword == false);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstLogin']) &&
+        request.resource.data.firstLogin == false);
       allow delete: if isAdmin();
     }
     match /posts/{id} {
