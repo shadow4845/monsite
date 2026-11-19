@@ -32,3 +32,25 @@ onAuthStateChanged(auth, async u => {
     <button class="pill ghost" id="navOut">Déconnexion</button>`;
   document.getElementById("navOut").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 });
+
+// Traînée de souris violette (cursor-trail)
+(() => {
+  if (matchMedia("(pointer: coarse)").matches) return; // pas sur téléphone
+  const cv = document.createElement("canvas");
+  cv.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999";
+  document.body.appendChild(cv);
+  const ctx = cv.getContext("2d"); let pts = [];
+  const size = () => { cv.width = innerWidth; cv.height = innerHeight; }; size(); addEventListener("resize", size);
+  addEventListener("mousemove", e => { for (let i = 0; i < 2; i++) pts.push({ x: e.clientX, y: e.clientY, vx: (Math.random()-.5)*1.2, vy: (Math.random()-.5)*1.2, life: 1 }); });
+  (function loop() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    pts = pts.filter(p => (p.life -= 0.03) > 0);
+    for (const p of pts) {
+      p.x += p.vx; p.y += p.vy;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 5 * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${168 + 50*(1-p.life)|0},85,247,${p.life})`;
+      ctx.shadowColor = "#a855f7"; ctx.shadowBlur = 12; ctx.fill();
+    }
+    requestAnimationFrame(loop);
+  })();
+})();

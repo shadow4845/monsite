@@ -20,12 +20,18 @@ const snap = await getDocs(collection(db, "streamers"));
 let L = snap.docs.map(d => d.data()).sort((a,b)=>(a.order||0)-(b.order||0));
 if (!L.length) L = [{ name:"NemesisShadow", role:"Fondateur", twitch:"shadow__officielle" }];
 document.getElementById("list").innerHTML = L.map(s => { const c = chan(s.twitch); return `<div class="card" style="text-align:center">
-  <img src="${esc(s.avatar || (c ? "https://unavatar.io/twitch/"+c+"?fallback=false" : "logo.png"))}" onerror="this.onerror=null;this.src='logo.png'" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 20px #a855f7;margin-bottom:10px">
+  <img src="${esc(s.avatar||"logo.png")}" data-tw="${s.avatar?"":esc(c)}" onerror="this.onerror=null;this.src='logo.png'" alt="" style="width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 20px #a855f7;margin-bottom:10px">
   <h2>${esc(s.name)}</h2><p style="color:#bbb;margin:6px 0 14px">${esc(s.role||"")}</p>
   ${c?`<a class="pill" style="background:#9146ff" href="https://www.twitch.tv/${esc(c)}" target="_blank" rel="noopener">📺 Twitch</a>`:""}
   ${s.youtube?` <a class="pill" style="background:#dc2626" href="${esc(s.youtube)}" target="_blank" rel="noopener">▶ YouTube</a>`:""}
   ${s.tiktok?` <a class="pill" style="background:#111;border:1px solid #444" href="${esc(s.tiktok)}" target="_blank" rel="noopener">🎵 TikTok</a>`:""}
 </div>`; }).join("");
+// Photo Twitch automatique si aucune photo n'est mise
+document.querySelectorAll("img[data-tw]").forEach(async img => {
+  const c = img.dataset.tw; if (!c) return;
+  try { const u = (await (await fetch("https://decapi.me/twitch/avatar/" + encodeURIComponent(c))).text()).trim();
+        if (/^https:\/\/static-cdn\.jtvnw\.net\//.test(u)) img.src = u; } catch (e) {}
+});
 </script>
 <script type="module" src="nav.js"></script>
 </body>
