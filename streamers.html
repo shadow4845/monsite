@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streameurs – Shadow</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="banner">
+<main style="max-width:1000px">
+  <h1 class="grad" style="font-size:40px;margin:20px 0 6px">Streameurs</h1>
+  <p style="color:#bbb;margin-bottom:24px">Les streameurs de la communauté Shadow.</p>
+  <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
+    <img src="logo.png" alt="" style="width:90px;height:90px;border-radius:50%;box-shadow:0 0 20px #a855f7">
+    <div style="flex:1">
+      <h2>NemesisShadow</h2>
+      <p style="color:#bbb;margin:6px 0 12px">Fondateur · Blox Fruits et plus</p>
+      <a class="pill" style="background:#9146ff" href="https://www.twitch.tv/shadow__officielle" target="_blank" rel="noopener">📺 Voir la chaîne</a>
+    </div>
+  </div>
+  <div style="border-radius:16px;overflow:hidden;border:1px solid #2a2a40;aspect-ratio:16/9" id="embed"></div>
+</main>
+<script>document.getElementById("embed").innerHTML=`<iframe src="https://player.twitch.tv/?channel=shadow__officielle&parent=${location.hostname}&muted=true" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;</script>
+<script type="module" src="nav.js"></script>
+</body>
+</html>
