@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion – Shadow</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="banner">
+<div class="center">
+  <div class="card" style="width:370px">
+    <img src="logo.png" alt="Logo" style="display:block;width:110px;height:110px;margin:0 auto 14px;border-radius:50%;box-shadow:0 0 30px rgba(168,85,247,.6)">
+    <h1 class="grad" id="title" style="text-align:center;font-size:28px;margin-bottom:6px">Connexion</h1>
+    <p id="subtitle" style="text-align:center;color:#999;margin-bottom:24px;font-size:14px">Connecte-toi pour continuer</p>
+
+    <form id="form">
+      <label>Pseudo</label>
+      <input id="user" placeholder="Ton pseudo" required autocomplete="username">
+      <label>Mot de passe</label>
+      <input id="pass" type="password" placeholder="••••••••" required autocomplete="current-password">
+      <div id="pass2wrap" style="display:none">
+        <label>Confirmer le mot de passe</label>
+        <input id="pass2" type="password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button type="submit" id="btn" style="width:100%">Se connecter</button>
+    </form>
+
+    <!-- Changement de mot de passe (1re connexion) -->
+    <form id="changeForm" style="display:none">
+      <p style="color:#fbbf24;font-size:14px;margin-bottom:16px">🔒 Première connexion : choisis ton nouveau mot de passe.</p>
+      <label>Nouveau mot de passe</label>
+      <input id="np1" type="password" required minlength="6" autocomplete="new-password">
+      <label>Confirmer</label>
+      <input id="np2" type="password" required minlength="6" autocomplete="new-password">
+      <button type="submit" style="width:100%">Changer le mot de passe</button>
+    </form>
+
+    <div class="msg" id="msg"></div>
+    <div style="text-align:center;margin-top:16px;font-size:13px;color:#888" id="switch">
+      Pas de compte ? <a href="#" id="toggle">Créer un compte</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { auth, login, register, getProfile, errMsg, updatePassword, updateDoc, doc, db, onAuthStateChanged } from "./app.js";
+const $ = id => document.getElementById(id);
+let mode = "login", busy = false;
+
+function show(t, c) { $("msg").textContent = t; $("msg").className = "msg " + c; }
+
+$("toggle").onclick = e => {
+  e.preventDefault();
+  mode = mode === "login" ? "register" : "login";
+  const reg = mode === "register";
+  $("title").textContent = reg ? "Inscription" : "Connexion";
+  $("subtitle").textContent = reg ? "Crée ton compte" : "Connecte-toi pour continuer";
+  $("btn").textContent = reg ? "S'inscrire" : "Se connecter";
+  $("pass2wrap").style.display = reg ? "block" : "none";
+  $("toggle").textContent = reg ? "Se connecter" : "Créer un compte";
+  $("switch").firstChild.textContent = reg ? "Déjà un compte ? " : "Pas de compte ? ";
+  show("", "");
+};
+
+async function route(user) {
+  const p = await getProfile(user.uid);
+  if (!p) return show("Profil introuvable", "err");
+  if (p.mustChangePassword) {
+    $("form").style.display = "none"; $("switch").style.display = "none";
+    $("changeForm").style.display = "block";
+    $("title").textContent = "Bienvenue " + p.pseudo; $("subtitle").textContent = "";
+    return;
+  }
+  location.href = p.role === "admin" ? "admin.html" : "user.html";
+}
+
+$("form").onsubmit = async e => {
+  e.preventDefault(); if (busy) return; busy = true;
+  try {
+    if (mode === "register") {
+      if ($("pass").value !== $("pass2").value) throw { code: "x", message: "Les mots de passe ne correspondent pas" };
+      await register($("user").value, $("pass").value);
+    } else {
+      await login($("user").value, $("pass").value);
+    }
+    await route(auth.currentUser);
+  } catch (err) { show(errMsg(err), "err"); }
+  busy = false;
+};
+
+$("changeForm").onsubmit = async e => {
+  e.preventDefault();
+  const a = $("np1").value, b = $("np2").value;
+  if (a !== b) return show("Les mots de passe ne correspondent pas", "err");
+  if (a === "azerty") return show("Choisis un mot de passe différent de l'ancien", "err");
+  try {
+    await updatePassword(auth.currentUser, a);
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { mustChangePassword: false });
+    show("Mot de passe changé ✔", "ok");
+    setTimeout(() => route(auth.currentUser), 800);
+  } catch (err) { show(errMsg(err), "err"); }
+};
+
+// Déjà connecté ? on redirige directement
+onAuthStateChanged(auth, u => { if (u && !busy) route(u); });
+</script>
+</body>
+</html>

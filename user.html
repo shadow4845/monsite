@@ -26,6 +26,7 @@
   <b class="grad" style="font-size:20px;display:flex;align-items:center;gap:10px"><img src="logo.png" alt="" style="width:38px;height:38px;border-radius:50%;box-shadow:0 0 12px #a855f7">Shadow</b>
   <div class="links">
     <span id="hello" style="color:#aaa;font-size:14px"></span>
+    <a href="trade.html" class="btn" style="padding:8px 14px">🍎 Trades</a>
     <a href="admin.html" id="adminLink" class="btn" style="display:none;padding:8px 14px">Admin</a>
     <button class="grey small" id="logout">Déconnexion</button>
   </div>
@@ -49,14 +50,14 @@
 </main>
 
 <script type="module">
-import { requireAuth, auth, signOut, db, collection, getDocs, query, orderBy, doc, getDoc } from "./app.js";
+import { requireAuth, auth, signOut, db, collection, getDocs, query, orderBy, doc, getDoc, setDoc, serverTimestamp } from "./app.js";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 const { profile } = await requireAuth();
 $("hello").textContent = "Salut " + profile.pseudo;
 if (profile.role === "admin") $("adminLink").style.display = "inline-block";
-$("logout").onclick = async () => { await signOut(auth); location.href = "index.html"; };
+$("logout").onclick = async () => { await signOut(auth); location.href = "login.html"; };
 
 // Lecteur Twitch (le paramètre parent doit être le domaine du site)
 $("embed").innerHTML = `<iframe src="https://player.twitch.tv/?channel=shadow__officielle&parent=${location.hostname}&muted=true"

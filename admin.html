@@ -40,6 +40,20 @@
   </div>
 
   <div class="card">
+    <h2 style="margin-bottom:16px">🍎 Fruits Blox Fruits (valeur et demande)</h2>
+    <form id="fruitForm" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+      <div><label>Nom</label><input id="fName" required></div>
+      <div><label>Valeur</label><input id="fVal" type="number" min="0" required></div>
+      <div><label>Valeur perm</label><input id="fPerm" type="number" min="0"></div>
+      <div><label>Demande /10</label><input id="fDem" type="number" min="0" max="10" required></div>
+      <div><button type="submit" style="margin-bottom:16px">Enregistrer</button></div>
+    </form>
+    <button class="grey small" id="seedFruits">Importer la liste des fruits (valeurs à 0)</button>
+    <div class="msg" id="fruitMsg"></div>
+    <table><thead><tr><th>Fruit</th><th>Valeur</th><th>Perm</th><th>Demande</th><th></th></tr></thead><tbody id="fruitList"></tbody></table>
+  </div>
+
+  <div class="card">
     <h2 style="margin-bottom:16px">👥 Utilisateurs</h2>
     <table><thead><tr><th>Pseudo</th><th>Rôle</th><th>Inscrit le</th><th>Actions</th></tr></thead><tbody id="userList"></tbody></table>
   </div>
@@ -53,7 +67,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const date = t => t ? t.toDate().toLocaleDateString("fr-FR") : "";
 
 const { user } = await requireAuth(true);
-$("logout").onclick = async () => { await signOut(auth); location.href = "index.html"; };
+$("logout").onclick = async () => { await signOut(auth); location.href = "login.html"; };
 
 // ---- Actus
 async function loadPosts() {
@@ -97,6 +111,27 @@ async function loadUsers() {
   });
 }
 loadPosts(); loadUsers();
+// ---- Fruits
+const NAMES=["Rocket","Spin","Blade","Spring","Bomb","Smoke","Spike","Flame","Ice","Sand","Dark","Eagle","Diamond","Light","Rubber","Ghost","Magma","Quake","Buddha","Love","Creation","Spider","Sound","Phoenix","Portal","Lightning","Pain","Blizzard","Gravity","Mammoth","T-Rex","Dough","Shadow","Venom","Control","Gas","Spirit","Leopard","Yeti","Kitsune","Dragon"];
+const fid = n => n.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-");
+async function loadFruits(){
+  const snap = await getDocs(collection(db,"fruits"));
+  const list = snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.value||0)-(x.value||0));
+  $("fruitList").innerHTML = list.map(f=>`<tr><td>${esc(f.name)}</td><td>${(f.value||0).toLocaleString("fr-FR")}</td><td>${f.permValue?f.permValue.toLocaleString("fr-FR"):"-"}</td><td>${f.demand||0}/10</td>
+    <td><button class="small" data-edit="${f.id}">Modifier</button> <button class="red small" data-fdel="${f.id}">✕</button></td></tr>`).join("") || '<tr><td colspan="5" style="color:#777">Aucun fruit</td></tr>';
+  $("fruitList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const f=list.find(x=>x.id===b.dataset.edit);
+    $("fName").value=f.name;$("fVal").value=f.value||0;$("fPerm").value=f.permValue||"";$("fDem").value=f.demand||0;$("fName").focus();});
+  $("fruitList").querySelectorAll("[data-fdel]").forEach(b=>b.onclick=async()=>{if(confirm("Supprimer ce fruit ?")){await deleteDoc(doc(db,"fruits",b.dataset.fdel));loadFruits();}});
+}
+$("fruitForm").onsubmit = async e => { e.preventDefault();
+  const name=$("fName").value.trim();
+  await setDoc(doc(db,"fruits",fid(name)),{name,value:+$("fVal").value,permValue:+$("fPerm").value||0,demand:Math.min(10,+$("fDem").value)});
+  e.target.reset(); $("fruitMsg").textContent="Fruit enregistré ✔"; $("fruitMsg").className="msg ok"; loadFruits(); };
+$("seedFruits").onclick = async () => {
+  for (const n of NAMES) { const r=doc(db,"fruits",fid(n)); const s=await getDoc(r); if(!s.exists()) await setDoc(r,{name:n,value:0,permValue:0,demand:0}); }
+  $("fruitMsg").textContent="Liste importée ✔ Remplis maintenant les valeurs et la demande."; $("fruitMsg").className="msg ok"; loadFruits(); };
+loadFruits();
+
 </script>
 </body>
 </html>

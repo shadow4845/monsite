@@ -51,9 +51,9 @@ export async function getProfile(uid) {
 // Protège une page : renvoie {user, profile} ou redirige vers le login
 export function requireAuth(needAdmin = false) {
   return new Promise(res => onAuthStateChanged(auth, async user => {
-    if (!user) return (location.href = "index.html");
+    if (!user) return (location.href = "login.html");
     const profile = await getProfile(user.uid);
-    if (!profile || profile.mustChangePassword) return (location.href = "index.html");
+    if (!profile || profile.mustChangePassword) return (location.href = "login.html");
     if (needAdmin && profile.role !== "admin") return (location.href = "user.html");
     res({ user, profile });
   }));
